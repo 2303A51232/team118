@@ -1,0 +1,101 @@
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+
+public class ApplicationFirewall {
+    private Map<String, FirewallPolicy> applicationPolicies;
+
+    public ApplicationFirewall() {
+        applicationPolicies = new HashMap<>();
+    }
+
+    public void setPolicy(String appName, FirewallPolicy policy) {
+        applicationPolicies.put(appName, policy);
+        System.out.println("Policy updated for application: " + appName);
+    }
+
+    public void monitorNetworkUsage(String appName) {
+        FirewallPolicy policy = applicationPolicies.get(appName);
+        if (policy != null) {
+            System.out.println("Monitoring network usage for: " + appName);
+            String[] attemptedDomains = { "example.com", "malicious.com" };
+            String[] attemptedProtocols = { "HTTP", "FTP" };
+
+            for (String domain : attemptedDomains) {
+                if (!isDomainAllowed(domain, policy)) {
+                    System.out.println("ALERT: Unauthorized domain access detected: " + domain);
+                } else {
+                    System.out.println("Domain access allowed: " + domain);
+                }
+            }
+
+            for (String protocol : attemptedProtocols) {
+                if (!isProtocolAllowed(protocol, policy)) {
+                    System.out.println("ALERT: Unauthorized protocol access detected: " + protocol);
+                } else {
+                    System.out.println("Protocol access allowed: " + protocol);
+                }
+            }
+
+        } else {
+            System.out.println("No policy found for application: " + appName);
+        }
+    }
+
+    private boolean isDomainAllowed(String domain, FirewallPolicy policy) {
+        for (String allowedDomain : policy.getAllowedDomains()) {
+            if (domain.equals(allowedDomain)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isProtocolAllowed(String protocol, FirewallPolicy policy) {
+        for (String allowedProtocol : policy.getAllowedProtocols()) {
+            if (protocol.equals(allowedProtocol)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void main(String[] args) {
+        ApplicationFirewall firewall = new ApplicationFirewall();
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter application name: ");
+        String appName = scanner.nextLine();
+
+        System.out.print("Enter allowed domains (comma-separated): ");
+        String domains = scanner.nextLine();
+
+        System.out.print("Enter allowed protocols (comma-separated): ");
+        String protocols = scanner.nextLine();
+
+        FirewallPolicy policy = new FirewallPolicy(domains.split(","), protocols.split(","));
+        firewall.setPolicy(appName, policy);
+
+        firewall.monitorNetworkUsage(appName);
+
+        scanner.close();
+    }
+}
+
+class FirewallPolicy {
+    private String[] allowedDomains;
+    private String[] allowedProtocols;
+
+    public FirewallPolicy(String[] allowedDomains, String[] allowedProtocols) {
+        this.allowedDomains = allowedDomains;
+        this.allowedProtocols = allowedProtocols;
+    }
+
+    public String[] getAllowedDomains() {
+        return allowedDomains;
+    }
+
+    public String[] getAllowedProtocols() {
+        return allowedProtocols;
+    }
+}
